@@ -1,6 +1,7 @@
 import minecraft_launcher_lib
 import os
 import configparser
+import urllib.request
 
 
 def m_install():
@@ -13,7 +14,10 @@ def m_install():
     config.set("GAME", "gameinstalled", "True")
     with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
         config.write(configfile)
+    client_instal(home_patch)
 
+def client_instal(home_patch):
+    urllib.request.urlretrieve("https://github.com/infinity-laucher/files/archive/refs/heads/main.zip", f"{home_patch}/.infl/main.zip") 
 
 if __name__ == "__main__":
     m_install()

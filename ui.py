@@ -1,10 +1,32 @@
 import sys
+from appstate import build
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QSpinBox, QHBoxLayout, QMessageBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject
 import configparser
 import os
 import urllib.request
 import webbrowser
+
+
+class InstallThread(QThread):
+    log_signal = pyqtSignal(str)
+    finished_signal = pyqtSignal()
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        self.log_signal.emit("Установка игры")
+        print("mi_i")
+        #self.m_install()
+        from install_minecraft import m_install
+        m_install()
+        self.log_signal.emit("Установка игры завершена")
+        self.finished_signal.emit()
+        
+    #def m_install(self):
+        #print("dsdsa")
+    
+    
 
 
 class MinecraftLauncher(QWidget):
@@ -13,7 +35,9 @@ class MinecraftLauncher(QWidget):
         config = configparser.ConfigParser()
         config.read(f"{home_patch}/.infl/config.ini") 
         super().__init__()
-
+        self.buttonp = False
+        self.install_thread = None
+        self.log_output = []
         self.username = config["AUTH"]["nickname"]
         self.install_path = config["GAME"]["minecraftdir"]
         self.ram_size = int(config["GAME"]["ram"])  
@@ -64,6 +88,7 @@ class MinecraftLauncher(QWidget):
         self.setLayout(layout)
     
     def launch_game(self):
+        
         home_patch = os.path.expanduser("~")
         config = configparser.ConfigParser()
         config.read(f"{home_patch}/.infl/config.ini")
@@ -75,13 +100,28 @@ class MinecraftLauncher(QWidget):
             self.log_output.append(f"Запуск Minecraft для {self.username}...")
             self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
             self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
-            if config["GAME"]["gameinstalled"] == "True":
-                pass
+            if self.buttonp is False:
+                self.buttonp = True
+                if config["GAME"]["gameinstalled"] == "True":
+                    pass
+                else:
+                    self.install_thread = InstallThread()
+                    self.install_thread.log_signal.connect(self.update_log)
+                    self.install_thread.finished_signal.connect(self.on_install_finished)
+                    #self.log_output.append(f"Установка игры")
+                    self.install_thread.start()
             else:
-                pass
+                self.log_output.append("Игра уже запущена/устанавливаеться!")
         else:
             self.log_output.append("Пожалуйста, введите никнейм!")
     
+    def update_log(self, message):
+        self.log_output.append(message)
+
+    def on_install_finished(self):
+        QMessageBox.information(None, "Установка завершена", "Установка игры завершена!")
+
+
     def open_settings(self):
         self.settings_window = QWidget()
         self.settings_window.setWindowTitle("Настройки")
@@ -150,11 +190,10 @@ class MinecraftLauncher(QWidget):
         QMessageBox.information(self, "Готово", "Проверка и восстановление завершены!")
 
 def lauch_ui():
+    appstateL = build
     home_patch = os.path.expanduser("~")
     urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     appstate = configparser.ConfigParser()
-    appstate.read(f"{home_patch}/.infl/appstate.ini")
-    appstateL = int(appstate["INFO"]["build"])
     appstate.read(f"{home_patch}/.infl/appstate_lastet.ini")
     appstateS = int(appstate["INFO_S"]["builds"])
     print(appstateL)

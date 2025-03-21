@@ -28,6 +28,7 @@ def first_start(home_patch):
     with open(f'{home_patch}/.infl/config.ini', 'w') as configfile:
         configp.write(configfile)
         configfile.close()
+        lauch_ui()
 
 if __name__ == "__main__":
     home_patch = os.path.expanduser("~")
