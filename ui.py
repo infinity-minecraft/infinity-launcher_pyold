@@ -6,6 +6,22 @@ import configparser
 import os
 import urllib.request
 import webbrowser
+import subprocess
+import minecraft_launcher_lib
+
+
+class RunThread(QThread):
+    log_signal = pyqtSignal(str)
+    finished_signal = pyqtSignal()
+    def __init__(self):
+        super().__init__()
+
+    def run_game(self):
+        from launch_minecraft import lauch_craft
+        self.log_signal.emit()
+        print("ll")
+        launch_craft()
+        self.finished_signal.emit()
 
 
 class InstallThread(QThread):
@@ -22,11 +38,6 @@ class InstallThread(QThread):
         m_install()
         self.log_signal.emit("Установка игры завершена")
         self.finished_signal.emit()
-        
-    #def m_install(self):
-        #print("dsdsa")
-    
-    
 
 
 class MinecraftLauncher(QWidget):
@@ -97,19 +108,47 @@ class MinecraftLauncher(QWidget):
         with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
             config.write(configfile)
         if self.username:
-            self.log_output.append(f"Запуск Minecraft для {self.username}...")
-            self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
-            self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
             if self.buttonp is False:
                 self.buttonp = True
                 if config["GAME"]["gameinstalled"] == "True":
-                    pass
+                    self.log_output.append(f"Запуск Minecraft для {self.username}...")
+                    self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
+                    self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
+                    self.buttonp = False
+                    home_patch = os.path.expanduser("~")
+                    config = configparser.ConfigParser()
+                    config.read(f"{home_patch}/.infl/config.ini")
+                    minecraft_directory = config["GAME"]["minecraftdir"]
+                    fs = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
+                    print(fs)
+                    ram = config["GAME"]["ram"]
+                    jvma = ["-Xmx2G", f"-Xms{ram}G"]
+                    nck = config["AUTH"]["nickname"]
+                    #options = minecraft_launcher_lib.utils.generate_test_options()
+                    options = {
+                            "username": nck,
+                            "uuid": "",
+                            "token": "",
+                            "jvmArguments": ["-Xmx2G", f"-Xms{ram}G"]
+
+                            }
+                    #options1["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
+                    print(options)
+                               #"jvmArguments": f"{jvma}"}
+
+                    #options["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
+                    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2-forge-40.3.0", minecraft_directory, options)
+                    subprocess.run(minecraft_command, cwd=minecraft_directory)
+
+
                 else:
+                    self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
                     self.install_thread = InstallThread()
                     self.install_thread.log_signal.connect(self.update_log)
                     self.install_thread.finished_signal.connect(self.on_install_finished)
                     #self.log_output.append(f"Установка игры")
                     self.install_thread.start()
+                    
             else:
                 self.log_output.append("Игра уже запущена/устанавливаеться!")
         else:
@@ -120,6 +159,10 @@ class MinecraftLauncher(QWidget):
 
     def on_install_finished(self):
         QMessageBox.information(None, "Установка завершена", "Установка игры завершена!")
+        self.buttonp = False
+
+    def on_launch(self):
+        QMessageBox.information(None, "Игра запущена", "Игра запущена")
 
 
     def open_settings(self):
@@ -177,23 +220,29 @@ class MinecraftLauncher(QWidget):
         config = configparser.ConfigParser()
         home_patch = os.path.expanduser("~")
         config.read(f"{home_patch}/.infl/config.ini")
-        if not self.install_path:
-            QMessageBox.warning(self, "Ошибка", "Не выбрана папка установки!")
-            return
-        elif config["GAME"]["gameinstalled"] == "False":
-            QMessageBox.warning(self, "Ошибка", "Игра не установлена!")
-            return
+        if self.buttonp is False:
+            self.buttonp = True
+            if not self.install_path:
+                QMessageBox.warning(self, "Ошибка", "Не выбрана папка установки!")
+                return
+            elif config["GAME"]["gameinstalled"] == "False":
+                QMessageBox.warning(self, "Ошибка", "Игра не установлена!")
+                return
+            else:
+                self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
+                self.install_thread = InstallThread()
+                self.install_thread.finished_signal.connect(self.on_install_finished)
+                self.install_thread.start()
+
+
         
-        self.log_output.append("Начинается проверка и восстановление игры...")
-        # Здесь можно добавить логику проверки файлов и их восстановления
-        self.log_output.append("Игра успешно проверена и восстановлена!")
-        QMessageBox.information(self, "Готово", "Проверка и восстановление завершены!")
+                
 
 def lauch_ui():
     appstateL = build
     home_patch = os.path.expanduser("~")
-    urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     appstate = configparser.ConfigParser()
+    urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     appstate.read(f"{home_patch}/.infl/appstate_lastet.ini")
     appstateS = int(appstate["INFO_S"]["builds"])
     print(appstateL)

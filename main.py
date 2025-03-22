@@ -2,6 +2,7 @@
 import os
 import configparser
 from ui import lauch_ui
+from appstate import build
 
 
 def start(home_patch):
@@ -25,10 +26,11 @@ def first_start(home_patch):
                        "RAM": 4
                        }
     configp["AUTH"] = {"nickname": "Steve"}
+    configp["INFO"] = {"Build": f"{build}"}
     with open(f'{home_patch}/.infl/config.ini', 'w') as configfile:
         configp.write(configfile)
         configfile.close()
-        lauch_ui()
+    lauch_ui()
 
 if __name__ == "__main__":
     home_patch = os.path.expanduser("~")
