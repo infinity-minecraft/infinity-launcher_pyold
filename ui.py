@@ -19,7 +19,7 @@ class RunThread(QThread):
     def run_game(self):
         from launch_minecraft import lauch_craft
         self.log_signal.emit()
-        print("ll")
+#        print("ll")
         launch_craft()
         self.finished_signal.emit()
 
@@ -124,12 +124,12 @@ class MinecraftLauncher(QWidget):
                     ram = config["GAME"]["ram"]
                     jvma = ["-Xmx2G", f"-Xms{ram}G"]
                     nck = config["AUTH"]["nickname"]
-                    #options = minecraft_launcher_lib.utils.generate_test_options()
+                    options = minecraft_launcher_lib.utils.generate_test_options()
                     options = {
                             "username": nck,
-                            "uuid": "",
+                            "uuid": nck,
                             "token": "",
-                            "jvmArguments": ["-Xmx2G", f"-Xms{ram}G"]
+                            "jvmArguments": [f"-Xmx{ram}G", "-Xms2G"]
 
                             }
                     #options1["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
@@ -138,6 +138,7 @@ class MinecraftLauncher(QWidget):
 
                     #options["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
                     minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2-forge-40.3.0", minecraft_directory, options)
+                    #minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2", minecraft_directory, options)
                     subprocess.run(minecraft_command, cwd=minecraft_directory)
 
 
