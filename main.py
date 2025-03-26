@@ -22,6 +22,7 @@ def first_start(home_patch):
     configp = configparser.ConfigParser()
     os.mkdir(f"{home_patch}/.infl/minecraft")
     configp["GAME"] = {"GameInstalled": False,
+                       "FilesVersion": "None",
                        "MinecraftDir": f"{home_patch}/.infl/minecraft",
                        "RAM": 4
                        }

@@ -1,6 +1,8 @@
 import sys
+
+from PyQt6.QtGui import QGuiApplication
 from appstate import build
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QSpinBox, QHBoxLayout, QMessageBox
+from PyQt6.QtWidgets import QApplication, QGraphicsLinearLayout, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QSpinBox, QHBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject
 import configparser
 import os
@@ -16,11 +18,30 @@ class RunThread(QThread):
     def __init__(self):
         super().__init__()
 
-    def run_game(self):
-        from launch_minecraft import lauch_craft
-        self.log_signal.emit()
-#        print("ll")
-        launch_craft()
+    def run(self):
+        #self.log_signal.emit()
+        home_patch = os.path.expanduser("~")
+        config = configparser.ConfigParser()
+        config.read(f"{home_patch}/.infl/config.ini")
+        minecraft_directory = config["GAME"]["minecraftdir"]
+        fs = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
+        print(fs)
+        ram = config["GAME"]["ram"]
+        jvma = ["-Xmx2G", f"-Xms{ram}G"]
+        nck = config["AUTH"]["nickname"]
+        #options = minecraft_launcher_lib.utils.generate_test_options()
+        options = {
+    
+                "username": nck,
+                "uuid": nck,
+                "token": "",
+                "jvmArguments": [f"-Xmx{ram}G", "-Xms2G"]
+                }
+        print(options)
+        minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2-forge-40.3.0", minecraft_directory, options)
+        #minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2", minecraft_directory, options)
+        print("ll")
+        subprocess.run(minecraft_command, cwd=minecraft_directory)
         self.finished_signal.emit()
 
 
@@ -114,32 +135,10 @@ class MinecraftLauncher(QWidget):
                     self.log_output.append(f"Запуск Minecraft для {self.username}...")
                     self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
                     self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
-                    self.buttonp = False
-                    home_patch = os.path.expanduser("~")
-                    config = configparser.ConfigParser()
-                    config.read(f"{home_patch}/.infl/config.ini")
-                    minecraft_directory = config["GAME"]["minecraftdir"]
-                    fs = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
-                    print(fs)
-                    ram = config["GAME"]["ram"]
-                    jvma = ["-Xmx2G", f"-Xms{ram}G"]
-                    nck = config["AUTH"]["nickname"]
-                    options = minecraft_launcher_lib.utils.generate_test_options()
-                    options = {
-                            "username": nck,
-                            "uuid": nck,
-                            "token": "",
-                            "jvmArguments": [f"-Xmx{ram}G", "-Xms2G"]
-
-                            }
-                    #options1["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
-                    print(options)
-                               #"jvmArguments": f"{jvma}"}
-
-                    #options["jvmArguments"] = ["-Xmx2G", f"-Xms{ram}G"]
-                    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2-forge-40.3.0", minecraft_directory, options)
-                    #minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2", minecraft_directory, options)
-                    subprocess.run(minecraft_command, cwd=minecraft_directory)
+                    self.run_thread = RunThread()
+                    self.run_thread.log_signal.connect(self.update_log)
+                    self.run_thread.finished_signal.connect(self.run_th)
+                    self.run_thread.start()  
 
 
                 else:
@@ -155,6 +154,10 @@ class MinecraftLauncher(QWidget):
         else:
             self.log_output.append("Пожалуйста, введите никнейм!")
     
+    def run_th(self):
+        QMessageBox.information(None, "Запуск игры", "Процес игры был завершен")
+        self.buttonp = False
+
     def update_log(self, message):
         self.log_output.append(message)
 
@@ -234,18 +237,28 @@ class MinecraftLauncher(QWidget):
                 self.install_thread = InstallThread()
                 self.install_thread.finished_signal.connect(self.on_install_finished)
                 self.install_thread.start()
-
-
         
+
+    def internet_error(self):
+        QMessageBox.information(None, "Internet", "Отсутствует соеденение с интернетом")
+        sys.exit()
                 
 
 def lauch_ui():
     appstateL = build
     home_patch = os.path.expanduser("~")
     appstate = configparser.ConfigParser()
-    urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
+    try:
+        urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
+    except:
+        app = QGuiApplication(sys.argv)
+        launcher = MinecraftLauncher()
+        launcher.internet_error()
+        sys.exit(app.exec())
+
     appstate.read(f"{home_patch}/.infl/appstate_lastet.ini")
     appstateS = int(appstate["INFO_S"]["builds"])
+    #appstateFiles = int(appstate["GAME"]["filesversion"])
     print(appstateL)
     print(appstateS)
     if appstateL < appstateS:
@@ -256,10 +269,12 @@ def lauch_ui():
         sys.exit(app.exec())
 
     else:
+        #if appstateFiles >  
         app = QApplication(sys.argv)
         launcher = MinecraftLauncher()
         launcher.show()
         sys.exit(app.exec())
+
 
 #if __name__ == "__main__":
 #    app = QApplication(sys.argv)
