@@ -1,4 +1,3 @@
-#import minecraft_launcher_lib
 import os
 import configparser
 from ui import lauch_ui
