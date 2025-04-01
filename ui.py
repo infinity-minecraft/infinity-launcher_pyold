@@ -1,5 +1,5 @@
 import sys
-
+import re
 from PyQt6.QtGui import QGuiApplication
 from appstate import build
 from PyQt6.QtWidgets import QApplication, QGraphicsLinearLayout, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QSpinBox, QHBoxLayout, QMessageBox
@@ -132,13 +132,17 @@ class MinecraftLauncher(QWidget):
             if self.buttonp is False:
                 self.buttonp = True
                 if config["GAME"]["gameinstalled"] == "True":
-                    self.log_output.append(f"Запуск Minecraft для {self.username}...")
-                    self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
-                    self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
-                    self.run_thread = RunThread()
-                    self.run_thread.log_signal.connect(self.update_log)
-                    self.run_thread.finished_signal.connect(self.run_th)
-                    self.run_thread.start()  
+                    if re.match(r"^\d", f"{self.username}"):
+                        self.buttonp = False
+                        self.log_output.append(f"Цифры в начале никнейма не разрешены!")
+                    else:
+                        self.log_output.append(f"Запуск Minecraft для {self.username}...")
+                        self.log_output.append(f"Папка установки: {self.install_path if self.install_path else 'Не выбрано'}")
+                        self.log_output.append(f"Выделенная память: {self.ram_size} ГБ")
+                        self.run_thread = RunThread()
+                        self.run_thread.log_signal.connect(self.update_log)
+                        self.run_thread.finished_signal.connect(self.run_th)
+                        self.run_thread.start()  
 
 
                 else:
