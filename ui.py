@@ -57,6 +57,16 @@ class InstallThread(QThread):
         #self.m_install()
         from install_minecraft import m_install
         m_install()
+        home_patch = os.path.expanduser("~")
+        configA = configparser.ConfigParser()
+        configA.read(f"{home_patch}/.infl/appstate_lastet.ini")
+        fb = configA["INFO_S"]["files_ver"]
+        print(fb)
+        config = configparser.ConfigParser()
+        config.read(f"{home_patch}/.infl/config.ini")
+        config.set("GAME", "filesversion", f"{fb}")
+        with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
+            config.write(configfile)
         self.log_signal.emit("Установка игры завершена")
         self.finished_signal.emit()
 
@@ -73,6 +83,7 @@ class MinecraftLauncher(QWidget):
         self.username = config["AUTH"]["nickname"]
         self.install_path = config["GAME"]["minecraftdir"]
         self.ram_size = int(config["GAME"]["ram"])  
+        self.abuild = build
         self.init_ui()
 
     def update(self):
@@ -118,6 +129,9 @@ class MinecraftLauncher(QWidget):
         layout.addWidget(self.log_output)
         
         self.setLayout(layout)
+
+        self.log_output.append(f"Номер билда: {self.abuild}")
+
     
     def launch_game(self):
         
@@ -247,6 +261,9 @@ class MinecraftLauncher(QWidget):
         QMessageBox.information(None, "Internet", "Отсутствует соеденение с интернетом")
         sys.exit()
                 
+    def update_found(self, launcher):
+        QMessageBox.information(None, "Обновление", "Обнаружено обновление для игры. Оно будет устоновленно при следущем запуске")
+        launcher.show()
 
 def lauch_ui():
     appstateL = build
@@ -262,7 +279,7 @@ def lauch_ui():
 
     appstate.read(f"{home_patch}/.infl/appstate_lastet.ini")
     appstateS = int(appstate["INFO_S"]["builds"])
-    #appstateFiles = int(appstate["GAME"]["filesversion"])
+    
     print(appstateL)
     print(appstateS)
     if appstateL < appstateS:
@@ -273,11 +290,32 @@ def lauch_ui():
         sys.exit(app.exec())
 
     else:
-        #if appstateFiles >  
-        app = QApplication(sys.argv)
-        launcher = MinecraftLauncher()
-        launcher.show()
-        sys.exit(app.exec())
+        appstateFiles = int(appstate["INFO_S"]["files_ver"])
+        appstate.read(f"{home_patch}/.infl/config.ini")
+        try:
+            appstateFilesl = int(appstate["GAME"]["filesversion"])
+        except ValueError:
+            print("ve")
+            appstate.set("GAME", "gameinstalled", "False")
+            with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
+                appstate.write(configfile)
+            app = QApplication(sys.argv)
+            launcher = MinecraftLauncher()
+            launcher.update_found(launcher)
+            sys.exit(app.exec())
+        if appstateFilesl < appstateFiles:
+            appstate.set("GAME", "gameinstalled", "False")
+            with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
+                appstate.write(configfile)
+            app = QApplication(sys.argv)
+            launcher = MinecraftLauncher()
+            launcher.update_found(launcher)
+            sys.exit(app.exec())
+        else:
+            app = QApplication(sys.argv)
+            launcher = MinecraftLauncher()
+            launcher.show()
+            sys.exit(app.exec())
 
 
 #if __name__ == "__main__":
