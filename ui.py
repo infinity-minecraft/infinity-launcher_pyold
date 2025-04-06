@@ -1,5 +1,6 @@
 import sys
 import re
+import platform
 from PyQt6.QtGui import QGuiApplication
 from appstate import build
 from PyQt6.QtWidgets import QApplication, QGraphicsLinearLayout, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit, QFileDialog, QSpinBox, QHBoxLayout, QMessageBox
@@ -17,6 +18,7 @@ class RunThread(QThread):
     finished_signal = pyqtSignal()
     def __init__(self):
         super().__init__()
+        
 
     def run(self):
         #self.log_signal.emit()
@@ -54,9 +56,21 @@ class InstallThread(QThread):
     def run(self):
         self.log_signal.emit("Установка игры")
         print("mi_i")
-        #self.m_install()
+        os_name = platform.system()
+        print(os_name)
+        if os_name == "Linux":
+            self.log_signal.emit("Автоматическая установка java не доступно на Linux. !!Если у вас отсутствует JDK17 то пожалуйста устоновите!!")
+        elif os_name == "Windows":
+            urllib.request.urlretrieve("https://download.oracle.com/java/17/archive/jdk-17.0.12_windows-x64_bin.msi", f"{os.path.expanduser('~')}/.infl/jdk-17.0.12_windows-x64_bin.msi")
+            self.log_signal.emit("Установка Java...")
+            subprocess.run([f"{os.path.expanduser('~')}/.infl/jdk-17.0.12_windows-x64_bin.msi", "/quiet", "/norestart"])
+            self.log_signal.emit("Java установлена")
+
         from install_minecraft import m_install
-        m_install()
+        try:
+            m_install()
+        except FileNotFoundError:
+            self.log_signal.emit("Установка провалена. Java не установлена!")
         home_patch = os.path.expanduser("~")
         configA = configparser.ConfigParser()
         configA.read(f"{home_patch}/.infl/appstate_lastet.ini")
@@ -186,7 +200,6 @@ class MinecraftLauncher(QWidget):
     def on_launch(self):
         QMessageBox.information(None, "Игра запущена", "Игра запущена")
 
-
     def open_settings(self):
         self.settings_window = QWidget()
         self.settings_window.setWindowTitle("Настройки")
@@ -206,7 +219,7 @@ class MinecraftLauncher(QWidget):
         ram_layout = QHBoxLayout()
         ram_label = QLabel("ОЗУ (ГБ):")
         self.ram_input = QSpinBox()
-        self.ram_input.setRange(1, 32)  # Выбор от 1 до 32 ГБ
+        self.ram_input.setRange(2, 32)  # Выбор от 2 до 32 ГБ
         self.ram_input.setValue(self.ram_size)
         self.ram_input.valueChanged.connect(self.set_ram_size)
         ram_layout.addWidget(ram_label)
@@ -272,7 +285,7 @@ def lauch_ui():
     try:
         urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     except:
-        app = QGuiApplication(sys.argv)
+        app = QApplication(sys.argv)
         launcher = MinecraftLauncher()
         launcher.internet_error()
         sys.exit(app.exec())
