@@ -63,7 +63,8 @@ class InstallThread(QThread):
         elif os_name == "Windows":
             urllib.request.urlretrieve("https://download.oracle.com/java/17/archive/jdk-17.0.12_windows-x64_bin.msi", f"{os.path.expanduser('~')}/.infl/jdk-17.0.12_windows-x64_bin.msi")
             self.log_signal.emit("Установка Java...")
-            subprocess.run([f"{os.path.expanduser('~')}/.infl/jdk-17.0.12_windows-x64_bin.msi", "/quiet", "/norestart"])
+            msi_path = os.path.expanduser('~') + '/.infl/jdk-17.0.12_windows-x64_bin.msi'
+            subprocess.run(["msiexec", "/i", msi_path, "/quiet", "/norestart"])
             self.log_signal.emit("Java установлена")
 
         from install_minecraft import m_install
