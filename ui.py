@@ -63,7 +63,7 @@ class InstallThread(QThread):
         elif os_name == "Windows":
             urllib.request.urlretrieve("https://download.oracle.com/java/17/archive/jdk-17.0.12_windows-x64_bin.msi", f"{os.path.expanduser('~')}/.infl/jdk-17.0.12_windows-x64_bin.msi")
             self.log_signal.emit("Установка Java...")
-            msi_path = os.path.expanduser('~') + '/.infl/jdk-17.0.12_windows-x64_bin.msi'
+            msi_path = os.path.expanduser('~') + '\.infl\jdk-17.0.12_windows-x64_bin.msi'
             subprocess.run(["msiexec", "/i", msi_path, "/norestart"])
             self.log_signal.emit("Java установлена")
 
