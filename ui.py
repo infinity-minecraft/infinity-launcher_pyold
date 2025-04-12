@@ -103,7 +103,7 @@ class MinecraftLauncher(QWidget):
 
     def update(self):
         reply = QMessageBox.question(
-            self, "Oбновление", "Доступно обновление. Хотите перейти на сайт?",
+            self, "Oбновление", "Доступно обновление. Если вы видете данное уведомление, то скорее всего автообновление не удалось. Хотите перейти на сайт?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         
