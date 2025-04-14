@@ -8,6 +8,12 @@ def start(home_patch):
     check_lock = os.path.exists(f"{home_patch}/.infl/exists.lock")
     if check_lock is True:
         print("Lock file check successful")
+        config = configparser.ConfigParser()
+        config.read(f"{home_patch}/.infl/config.ini")
+        config["INFO"]["build"] = f"{build}"
+        with open(f"{home_patch}/.infl/config.ini", 'w') as configfile:
+            config.write(configfile)
+            configfile.close()
         lauch_ui()
     else:
         print("Lock file check failed")
