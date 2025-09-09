@@ -45,6 +45,7 @@ jobs:
           pyinstaller --onefile --windowed \
             --name netherfall-launcher \
             --hidden-import=pkgutil \
+            --collect-all PyQt6.Qt6 \
             main.py
 
       - name: Upload artifact (linux)
@@ -87,6 +88,7 @@ jobs:
           pyinstaller --onefile --windowed \
             --name netherfall-launcher \
             --hidden-import=pkgutil \
+            --collect-all PyQt6.Qt6 \
             main.py
 
       - name: Upload artifact (linux-old-glibc)
