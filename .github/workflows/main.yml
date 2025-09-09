@@ -1,5 +1,8 @@
 name: Build
-on: [push, workflow_dispatch] 
+on:
+  push:
+    branches: [ main ]  
+  workflow_dispatch:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -11,7 +14,7 @@ jobs:
       - run: pip install pyinstaller
       - run: pip install pyqt6
       - run: pip install minecraft-launcher-lib
-      - run: pyinstaller --onefile main.py
+      - run: pyinstaller --name netherfall-launcher --windowed --onefile main.py
       - uses: actions/upload-artifact@v4
         with:
           name: netherfall-launcher-linux
@@ -27,7 +30,7 @@ jobs:
       - run: pip install pyinstaller
       - run: pip install pyqt6
       - run: pip install minecraft-launcher-lib
-      - run: pyinstaller --onefile main.py
+      - run: pyinstaller --name netherfall-launcher --windowed --onefile main.py
       - uses: actions/upload-artifact@v4
         with:
           name: netherfall-launcher-windows
