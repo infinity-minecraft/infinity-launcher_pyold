@@ -267,6 +267,10 @@ def lauch_ui():
         with urllib.request.urlopen(url, context=ctx, timeout=20) as resp, open(dst, "wb") as f:
             f.write(resp.read())
         return True
+
+    except Exception as e:
+        print("Ошибка загрузки appstate_lastet.ini:", e)
+        return False
     #except:
     #    app = QApplication(sys.argv)
     #    launcher = MinecraftLauncher()
