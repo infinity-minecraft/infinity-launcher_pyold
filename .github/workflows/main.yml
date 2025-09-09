@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller pyqt6 minecraft-launcher-lib
       - name: Build
-        run: pyinstaller --onefile --windowed --name netherfall-launcher --collect-all PyQt6 main.py
+        run: pyinstaller --onefile --windowed --name netherfall-launcher main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -45,7 +45,6 @@ jobs:
       run: |
         pyinstaller --onefile --windowed \
           --name netherfall-launcher \
-          --collect-all PyQt6 \
           main.py
 
     - name: Upload artifact
@@ -68,7 +67,7 @@ jobs:
           pip install pyinstaller pyqt6 minecraft-launcher-lib
 
       - name: Build
-        run: pyinstaller --onefile --windowed --name netherfall-launcher --collect-all PyQt6 main.py
+        run: pyinstaller --onefile --windowed --name netherfall-launcher main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
