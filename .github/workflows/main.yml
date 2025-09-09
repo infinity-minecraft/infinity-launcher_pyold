@@ -39,14 +39,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller pyqt6 minecraft-launcher-lib
-          # если есть requirements.txt, раскомментируй:
-          # pip install -r requirements.txt
 
       - name: Build (PyInstaller)
         run: |
           pyinstaller --onefile --windowed \
             --name netherfall-launcher \
-            --collect-all PyQt6 \
             main.py
 
       - name: Upload artifact (linux)
@@ -80,8 +77,7 @@ jobs:
       - name: Install Python deps
         run: |
           pip3 install pyinstaller pyqt6 minecraft-launcher-lib
-          # при желании:
-          # pip3 install -r requirements.txt
+  
 
       - name: Build (PyInstaller)
         env:
@@ -89,7 +85,6 @@ jobs:
         run: |
           pyinstaller --onefile --windowed \
             --name netherfall-launcher \
-            --collect-all PyQt6 \
             main.py
 
       - name: Upload artifact (linux-old-glibc)
@@ -120,11 +115,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller pyqt6 minecraft-launcher-lib
-          # pip install -r requirements.txt
 
       - name: Build (PyInstaller)
         run: |
-          pyinstaller --onefile --windowed --name netherfall-launcher --collect-all PyQt6 main.py
+          pyinstaller --onefile --windowed --name netherfall-launcher main.py
 
       - name: Upload artifact (windows)
         uses: actions/upload-artifact@v4
