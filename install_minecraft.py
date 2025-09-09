@@ -5,6 +5,8 @@ import urllib.request
 import zipfile
 import shutil
 
+def _allowed_gai_family():
+    return socket.AF_INET
 
 def m_install():
     config = configparser.ConfigParser()
@@ -12,7 +14,7 @@ def m_install():
     config.read(f"{home_patch}/.infl/config.ini")
     #forge_version = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
     minecraft_directory = config["GAME"]["minecraftdir"]
-    minecraft_launcher_lib.forge.install_forge_version("1.18.2-40.3.0", minecraft_directory)
+    minecraft_launcher_lib.forge.install_forge_version("1.20.1-47.4.0", minecraft_directory)
 #    config.set("GAME", "gameinstalled", "True")
 #    with open(f"{home_patch}/.infl/config.ini", "w") as configfile:
 #        config.write(configfile)
