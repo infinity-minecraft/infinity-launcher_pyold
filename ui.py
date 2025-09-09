@@ -260,7 +260,7 @@ def lauch_ui():
     try:
         urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     except:
-        app = QGuiApplication(sys.argv)
+        app = QApplication(sys.argv)
         launcher = MinecraftLauncher()
         launcher.internet_error()
         sys.exit(app.exec())
