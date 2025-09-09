@@ -1,0 +1,34 @@
+name: Build
+on: [push, workflow_dispatch] 
+jobs:
+  build-linux:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyinstaller
+      - run: pip install pyqt6
+      - run: pip install minecraft-launcher-lib
+      - run: pyinstaller --onefile main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: netherfall-launcher-linux
+          path: dist/main
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyinstaller
+      - run: pip install pyqt6
+      - run: pip install minecraft-launcher-lib
+      - run: pyinstaller --onefile main.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: netherfall-launcher-windows
+          path: dist/main.exe
