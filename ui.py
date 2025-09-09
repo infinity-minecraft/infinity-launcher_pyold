@@ -258,7 +258,7 @@ def lauch_ui():
     home_patch = os.path.expanduser("~")
     appstate = configparser.ConfigParser()
     try:
-        urllib.request.urlretrieve("https://raw.githubusercontent.com/infinity-laucher/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
+        urllib.request.urlretrieve("https://raw.githubusercontent.com/netherfall-minecraft/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
     except:
         app = QApplication(sys.argv)
         launcher = MinecraftLauncher()
