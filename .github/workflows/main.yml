@@ -26,25 +26,33 @@ jobs:
           name: netherfall-launcher-linux
           path: dist/netherfall-launcher
 
-  build-linux_manylinux2014:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  build-linux-old_glibc:
+   runs-on: ubuntu-latest
+   container:
+    image: python:3.10-buster   # glibc 2.28
+   steps:
+    - uses: actions/checkout@v4
 
-      - name: Build in manylinux2014 (Docker)
-        run: |
-          docker run --rm -v "$PWD":/io -w /io quay.io/pypa/manylinux2014_x86_64 \
-          bash -lc "
-            /opt/python/cp311-cp311/bin/python -m pip install --upgrade pip &&
-            /opt/python/cp311-cp311/bin/pip install --only-binary=:all: pyinstaller pyqt6 minecraft-launcher-lib &&
-            /opt/python/cp311-cp311/bin/pyinstaller --onefile --windowed --name netherfall-launcher --collect-all PyQt6 main.py
-          "
+    - name: Upgrade pip
+      run: python -m pip install --upgrade pip
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: netherfall-launcher-linux-old_glibc
-          path: dist/netherfall-launcher
+    - name: Install Python deps
+      run: |
+        pip install --only-binary=:all: pyinstaller pyqt6 minecraft-launcher-lib
+
+
+    - name: Build (PyInstaller)
+      run: |
+        pyinstaller --onefile --windowed \
+          --name netherfall-launcher \
+          --collect-all PyQt6 \
+          main.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: netherfall-launcher-linux-old_glibc
+        path: dist/netherfall-launcher
 
   build-windows:
     runs-on: windows-latest
