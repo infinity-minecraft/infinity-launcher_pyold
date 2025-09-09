@@ -1,11 +1,13 @@
 name: Build
 on:
   push:
-    branches: [ main ]  
-  workflow_dispatch:
+    branches: [ main ]    
+  workflow_dispatch:       
+
 jobs:
+
   build-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,18 +22,95 @@ jobs:
           name: netherfall-launcher-linux
           path: dist/netherfall-launcher
 
+  build-linux_old_glibc:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:9
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: |
+          apt-get update
+          apt-get install -y python3 python3-pip
+          python3 -m pip install --upgrade pip
+
+      - name: Install Python deps
+        run: |
+          pip3 install pyinstaller pyqt6 minecraft-launcher-lib
+
+      - name: Build (PyInstaller)
+        run: |
+          pyinstaller --onefile --windowed \
+            --name netherfall-launcher \
+            main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: netherfall-launcher-linux_old_glibc
+          path: dist/netherfall-launcher
+
   build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Cache pip
+        uses: actions/cache@v4
         with:
-          python-version: '3.11'
-      - run: pip install pyinstaller
-      - run: pip install pyqt6
-      - run: pip install minecraft-launcher-lib
-      - run: pyinstaller --name netherfall-launcher --windowed --onefile main.py
-      - uses: actions/upload-artifact@v4
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pyqt6 minecraft-launcher-lib
+          # если есть requirements.txt:
+          # pip install -r requirements.txt
+
+      - name: Build (PyInstaller)
+        run: |
+          pyinstaller --onefile --windowed ^
+            --name netherfall-launcher ^
+            --collect-all PyQt6 ^
+            main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: netherfall-launcher-windows
           path: dist/netherfall-launcher.exe
+
+  # build-macos:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #     - name: Cache pip
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/Library/Caches/pip
+  #         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-pip-
+  #     - name: Install Python deps
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install pyinstaller pyqt6 minecraft-launcher-lib
+  #         # pip install -r requirements.txt
+  #     - name: Build (PyInstaller)
+  #       run: |
+  #         pyinstaller --onefile --windowed \
+  #           --name netherfall-launcher \
+  #           --collect-all PyQt6 \
+  #           main.py
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: netherfall-launcher-macos
+  #         path: dist/netherfall-launcher
