@@ -114,9 +114,9 @@ jobs:
 
       - name: Build (PyInstaller)
         run: |
-          pyinstaller --onefile --windowed ^
-            --name netherfall-launcher ^
-            --collect-all PyQt6 ^
+          pyinstaller --onefile --windowed 
+            --name netherfall-launcher 
+            --collect-all PyQt6 
             main.py
 
       - name: Upload artifact (Windows)
