@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QGraphicsLinearLayout, QWidget, QVBoxL
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject
 import configparser
 import os
-import urllib.request
+import urllib.request, ssl, certifi, os
 import webbrowser
 import subprocess
 import minecraft_launcher_lib
@@ -258,7 +258,15 @@ def lauch_ui():
     home_patch = os.path.expanduser("~")
     appstate = configparser.ConfigParser()
     #try:
-    urllib.request.urlretrieve("https://raw.githubusercontent.com/netherfall-minecraft/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
+    #urllib.request.urlretrieve("https://raw.githubusercontent.com/netherfall-minecraft/state/refs/heads/main/appstate_lastet.ini", f"{home_patch}/.infl/appstate_lastet.ini")
+    url = "https://raw.githubusercontent.com/netherfall-minecraft/state/refs/heads/main/appstate_lastet.ini"
+    dst = os.path.join(home_patch, ".infl", "appstate_lastet.ini")
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    ctx = ssl.create_default_context(cafile=certifi.where())
+    try:
+        with urllib.request.urlopen(url, context=ctx, timeout=20) as resp, open(dst, "wb") as f:
+            f.write(resp.read())
+        return True
     #except:
     #    app = QApplication(sys.argv)
     #    launcher = MinecraftLauncher()
