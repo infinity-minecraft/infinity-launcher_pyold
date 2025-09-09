@@ -24,21 +24,30 @@ class RunThread(QThread):
         config = configparser.ConfigParser()
         config.read(f"{home_patch}/.infl/config.ini")
         minecraft_directory = config["GAME"]["minecraftdir"]
-        fs = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
-        print(fs)
+        #fs = minecraft_launcher_lib.forge.find_forge_version("1.18.2")
+        #print(fs)
         ram = config["GAME"]["ram"]
         jvma = ["-Xmx2G", f"-Xms{ram}G"]
         nck = config["AUTH"]["nickname"]
+        lwjgl_jars=os.path.expanduser("~/.infl/lwjgl-3.3.6/jar")
         #options = minecraft_launcher_lib.utils.generate_test_options()
         options = {
     
                 "username": nck,
                 "uuid": nck,
                 "token": "",
-                "jvmArguments": [f"-Xmx{ram}G", "-Xms2G"]
+                "jvmArguments": 
+                [   f"-Xmx{ram}G",
+                    "-Xms2G",
+                    #f"-Dorg.lwjgl.librarypath={home_patch}/.infl/minecraft/natives",
+                    #"-Djava.library.path=/usr/local/lib",
+                    #f"-Djava.library.path={home_patch}/.infl/minecraft/natives", 
+                    "-Dorg.lwjgl.util.Debug=true", 
+                    "-Dorg.lwjgl.util.DebugLoader=true",
+                    ]
                 }
         print(options)
-        minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2-forge-40.3.0", minecraft_directory, options)
+        minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.20.1-forge-47.4.0", minecraft_directory, options)
         #minecraft_command = minecraft_launcher_lib.command.get_minecraft_command("1.18.2", minecraft_directory, options)
         print("ll")
         subprocess.run(minecraft_command, cwd=minecraft_directory)
@@ -89,7 +98,7 @@ class MinecraftLauncher(QWidget):
 
 
     def init_ui(self):
-        self.setWindowTitle("Infinity launcher")
+        self.setWindowTitle("Netherfall launcher")
         self.setGeometry(100, 100, 400, 400)
 
         layout = QVBoxLayout()
